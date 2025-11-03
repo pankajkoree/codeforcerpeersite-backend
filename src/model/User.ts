@@ -47,10 +47,13 @@ const userSchema: Schema<InterfaceUser> = new Schema({
     required: [true, "password is required"],
     minLength: [8, "must be 8 characters long"],
     validate: {
-      validator: function (value: string) {
-        return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-          value
-        );
+      validator: function (value: string): boolean {
+        if (this.isModified("password") && !value.startsWith("$2b$")) {
+          return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+            value
+          );
+        }
+        return true;
       },
       message:
         "Password must contain at least one uppercase letter, one number, and one special character",
