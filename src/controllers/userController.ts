@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import User from "../model/User";
+import validator from "validator";
+import bcryptjs from "bcryptjs";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -19,18 +21,54 @@ export const getAllUser = async (req: Request, res: Response) => {
   }
 };
 
-export const postAddUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, gender, university } = req.body;
+    const { firstName, lastName, email, password, gender, university } =
+      req.body;
+
+    // validation
+    if (!firstName || !email || !password || !gender || !university) {
+      return res.json({
+        status: 400,
+        message: "All fields are required",
+      });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.json({
+        status: 400,
+        message: "email not valid",
+      });
+    }
+
+    if (password.length < 8) {
+      return res.json({
+        status: 400,
+        message: "password must be 8 characters",
+      });
+    }
+
+    // checking if user exits
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.json({
+        status: 400,
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
     const user = new User({
       firstName,
       lastName,
       email,
+      password: hashedPassword,
       gender,
       university,
     });
 
-    user.save();
+    await user.save();
     return res.json({
       status: 200,
       data: user,
