@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 import validator from "validator";
 
 export interface InterfaceUser extends Document {
+  _id: Types.ObjectId;
   firstName: string;
   lastName: string;
   email: string;

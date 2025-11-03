@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
+import { generateToken } from "../utils/auth";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -69,9 +70,14 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     await user.save();
+
+    const token = generateToken(user._id.toString());
+
+    (req.session as any).userId = user._id;
     return res.json({
       status: 200,
       data: user,
+      token: token,
     });
   } catch (error) {
     return res.json({
@@ -79,4 +85,51 @@ export const registerUser = async (req: Request, res: Response) => {
       status: 404,
     });
   }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.json({
+        status: 400,
+        message: "user not found",
+      });
+
+    const isPasswordMatched = await bcryptjs.compare(password, user.password);
+
+    if (!isPasswordMatched)
+      return res.json({
+        status: 400,
+        message: "invalid credentials",
+      });
+
+    const token = generateToken(user._id.toString());
+
+    (req.session as any).userId = user._id;
+    return res.json({
+      status: 200,
+      message: "Login successful",
+      token: token,
+      data: user,
+    });
+  } catch (error) {
+    return res.json({
+      status: 500,
+      message: "Server error",
+      error: error,
+    });
+  }
+};
+
+export const logoutUser = async (req: Request, res: Response) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    return res.json({
+      status: 200,
+      message: "Logged out successfully",
+    });
+  });
 };
