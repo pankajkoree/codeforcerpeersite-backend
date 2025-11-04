@@ -9,7 +9,7 @@ import MongoStore from "connect-mongo";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DB_URI;
 
 app.use(
