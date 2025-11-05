@@ -36,7 +36,10 @@ app.use(express.json());
 app.use(userRouter);
 
 app.get("/", (req, res) => {
-  res.send("Hello from TypeScript Node.js backend!");
+  return res.json({
+    status: 200,
+    message: "render server working fine",
+  });
 });
 
 if (!DBURI) {

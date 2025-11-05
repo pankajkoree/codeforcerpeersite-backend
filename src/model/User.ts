@@ -3,8 +3,7 @@ import validator from "validator";
 
 export interface InterfaceUser extends Document {
   _id: Types.ObjectId;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -13,21 +12,11 @@ export interface InterfaceUser extends Document {
 }
 
 const userSchema: Schema<InterfaceUser> = new Schema({
-  firstName: {
+  name: {
     type: String,
-    required: [true, "firstname is required"],
+    required: [true, "name is required"],
     trim: true,
     minLength: [2, "must be atleast 2 characters long"],
-    validate: {
-      validator: function (value: string) {
-        return /^[a-zA-Z\s]+$/.test(value);
-      },
-      message: "only letters and spaces",
-    },
-  },
-  lastName: {
-    type: String,
-    trim: true,
     validate: {
       validator: function (value: string) {
         return /^[a-zA-Z\s]+$/.test(value);

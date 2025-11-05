@@ -24,11 +24,10 @@ export const getAllUser = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password, gender, university } =
-      req.body;
+    const { name, email, password, gender, university } = req.body;
 
     // validation
-    if (!firstName || !email || !password || !gender || !university) {
+    if (!name || !email || !password || !gender || !university) {
       return res.json({
         status: 400,
         message: "All fields are required",
@@ -61,8 +60,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcryptjs.hash(password, 10);
 
     const user = new User({
-      firstName,
-      lastName,
+      name,
       email,
       password: hashedPassword,
       gender,
