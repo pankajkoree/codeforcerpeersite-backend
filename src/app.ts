@@ -36,8 +36,7 @@ app.use(express.json());
 app.use(userRouter);
 
 app.get("/", (req, res) => {
-  return res.json({
-    status: 200,
+  return res.status(200).json({
     message: "render server working fine",
   });
 });

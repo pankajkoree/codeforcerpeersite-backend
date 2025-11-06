@@ -8,17 +8,11 @@ export const getAllUser = async (req: Request, res: Response) => {
   try {
     const response = await User.find();
     if (!response) {
-      return res.json({
-        error: "User not found",
-        status: 404,
-      });
+      return res.status(404).json({ error: "User not found" });
     }
     return res.json(response);
   } catch (error) {
-    return res.json({
-      error: error,
-      status: 404,
-    });
+    return res.status(404).json({ error: error });
   }
 };
 
@@ -28,33 +22,21 @@ export const registerUser = async (req: Request, res: Response) => {
 
     // validation
     if (!name || !email || !password || !gender || !university) {
-      return res.json({
-        status: 400,
-        message: "All fields are required",
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     if (!validator.isEmail(email)) {
-      return res.json({
-        status: 400,
-        message: "email not valid",
-      });
+      return res.status(400).json({ message: "email not valid" });
     }
 
     if (password.length < 8) {
-      return res.json({
-        status: 400,
-        message: "password must be 8 characters",
-      });
+      return res.status(400).json({ message: "password must be 8 characters" });
     }
 
     // checking if user exits
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.json({
-        status: 400,
-        message: "User already exists",
-      });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
@@ -72,16 +54,9 @@ export const registerUser = async (req: Request, res: Response) => {
     const token = generateToken(user._id.toString());
 
     (req.session as any).userId = user._id;
-    return res.json({
-      status: 200,
-      data: user,
-      token: token,
-    });
+    return res.status(200).json({ data: user, token: token });
   } catch (error) {
-    return res.json({
-      error: error,
-      status: 404,
-    });
+    return res.status(404).json({ error: error });
   }
 };
 
@@ -90,32 +65,23 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user)
-      return res.json({
-        status: 400,
-        message: "user not found",
-      });
+    if (!user) return res.status(400).json({ message: "user not found" });
 
     const isPasswordMatched = await bcryptjs.compare(password, user.password);
 
     if (!isPasswordMatched)
-      return res.json({
-        status: 400,
-        message: "invalid credentials",
-      });
+      return res.status(400).json({ message: "invalid credentials" });
 
     const token = generateToken(user._id.toString());
 
     (req.session as any).userId = user._id;
-    return res.json({
-      status: 200,
+    return res.status(200).json({
       message: "Login successful",
       token: token,
       data: user,
     });
   } catch (error) {
-    return res.json({
-      status: 500,
+    return res.status(500).json({
       message: "Server error",
       error: error,
     });
@@ -125,9 +91,6 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
-    return res.json({
-      status: 200,
-      message: "Logged out successfully",
-    });
+    return res.status(200).json({ message: "Logged out successfully" });
   });
 };
