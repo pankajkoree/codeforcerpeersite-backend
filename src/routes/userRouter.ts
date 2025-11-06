@@ -13,6 +13,7 @@ const userRouter = express.Router();
 userRouter.get("/user", getAllUser);
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
+userRouter.get("/", logoutUser);
 userRouter.get("/profile", verifyToken, (req, res) => {
   return res.json({
     status: 200,
