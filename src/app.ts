@@ -47,7 +47,6 @@ app.use(
 
 app.use(userRouter);
 
-// server testing route
 app.get("/", (req, res) => {
   return res.status(200).json({
     message: "render server working fine",
