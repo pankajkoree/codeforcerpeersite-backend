@@ -1,8 +1,15 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // jwt secret
 const JWT_SECRET = process.env.JWT_SECRET!;
+
+
+
+console.log("secret key in auth ts : ", JWT_SECRET);
 
 // jwt token generation
 export const generateToken = (userId: string) => {
