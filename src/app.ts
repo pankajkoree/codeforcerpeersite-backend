@@ -47,11 +47,6 @@ app.use(
 
 app.use(userRouter);
 
-app.get("/", (req, res) => {
-  return res.status(200).json({
-    message: "render server working fine",
-  });
-});
 
 if (!DBURI) {
   throw new Error("MONGODB URI not found");
