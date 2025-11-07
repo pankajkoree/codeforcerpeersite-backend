@@ -13,12 +13,6 @@ const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DB_URI;
 const secretKey = process.env.SESSION_SECRET!;
 
-console.log("secret key in app ts : ", secretKey);
-
-app.use((req, res, next) => {
-  console.log(`➡️ ${req.method} ${req.originalUrl}`);
-  next();
-});
 
 app.use(
   cors({
@@ -52,10 +46,6 @@ app.use(
 );
 
 app.use(userRouter);
-app.get("/test", (req, res) => {
-  console.log("🔥 Test route hit");
-  res.json({ ok: true });
-});
 
 app.get("/", (req, res) => {
   return res.status(200).json({
@@ -67,14 +57,6 @@ if (!DBURI) {
   throw new Error("MONGODB URI not found");
 }
 mongoose.connect(DBURI!).then(() => {
-  process.on("uncaughtException", (err) => {
-    console.error("🔥 Uncaught Exception:", err);
-  });
-
-  process.on("unhandledRejection", (reason, promise) => {
-    console.error("🔥 Unhandled Rejection:", reason);
-  });
-
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

@@ -51,9 +51,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     try {
       await user.save();
-      console.log("✅ Saved user in DB");
     } catch (err) {
-      console.error("🔥 Error while saving user:", err);
       return res
         .status(500)
         .json({ message: "Failed to save user", error: err });
@@ -62,23 +60,18 @@ export const registerUser = async (req: Request, res: Response) => {
     const token = generateToken(user._id.toString());
 
     (req.session as any).userId = user._id;
-    console.log("✅ User created:", user.email);
     return res.status(200).json({ data: user, token: token });
   } catch (error) {
-    console.error("🔥 Register Error:", error);
     return res.status(404).json({ error: error });
   }
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  console.log("🟢 Login route hit");
+
 
   try {
-    console.log("Step 1: Received body", req.body);
     const { email, password } = req.body;
-    console.log(email, password);
     const user = await User.findOne({ email });
-    console.log("Step 2: Found user", user);
 
     if (!user) return res.status(400).json({ message: "user not found" });
     if (!user.password)
@@ -98,7 +91,6 @@ export const loginUser = async (req: Request, res: Response) => {
       data: user,
     });
   } catch (error) {
-    console.error("🔥 Login Error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error,
