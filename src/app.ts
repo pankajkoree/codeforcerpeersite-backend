@@ -23,9 +23,9 @@ app.use(
       ttl: 15 * 24 * 60 * 60,
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "RENDER",
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: process.env.NODE_ENV! === "RENDER" ? "none" : "lax",
+      sameSite: process.env.NODE_ENV! === "production" ? "none" : "lax",
       maxAge: 1000 * 24 * 60 * 60,
     },
   })
