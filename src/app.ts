@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DB_URI;
 const secretKey = process.env.SESSION_SECRET!;
 
-
+// cors on top
 app.use(
   cors({
     origin: [
