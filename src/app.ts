@@ -23,14 +23,20 @@ app.use(
       ttl: 15 * 24 * 60 * 60,
     }),
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "RENDER",
       httpOnly: true,
+      sameSite: process.env.NODE_ENV! === "RENDER" ? "none" : "lax",
       maxAge: 1000 * 24 * 60 * 60,
     },
   })
 );
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://codeforcerpeersite-backend.onrender.com",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use(userRouter);
