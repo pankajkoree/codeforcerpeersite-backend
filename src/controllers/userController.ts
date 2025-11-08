@@ -67,8 +67,6 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-
-
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -85,6 +83,10 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = generateToken(user._id.toString());
 
     (req.session as any).userId = user._id;
+    req.session.save((err) => {
+      if (err) return res.status(500).json({ error: "Session save failed" });
+      res.json({ message: "Logged in successfully" });
+    });
     return res.status(200).json({
       message: "Login successful",
       token: token,
