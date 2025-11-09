@@ -20,13 +20,13 @@ app.use(
       "http://localhost:3000",
       "https://codeforcerpeersite-frontend.vercel.app",
     ],
-    methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-    allowedHeaders:["Content-Type","Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-app.options("*",cors())
+app.options("/*", cors());
 
 app.use(express.json());
 
@@ -50,7 +50,6 @@ app.use(
 );
 
 app.use(userRouter);
-
 
 if (!DBURI) {
   throw new Error("MONGODB URI not found");
