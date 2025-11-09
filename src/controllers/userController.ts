@@ -100,6 +100,28 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
+// get profile
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user id found" });
+    }
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "no user found" });
+    }
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: error, message: "internal server error" });
+  }
+};
+
 export const logoutUser = async (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
