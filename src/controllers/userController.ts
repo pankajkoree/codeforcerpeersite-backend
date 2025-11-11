@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
-import { generateToken } from "../utils/auth";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -57,10 +56,8 @@ export const registerUser = async (req: Request, res: Response) => {
         .json({ message: "Failed to save user", error: err });
     }
 
-    const token = generateToken(user._id.toString());
-
     (req.session as any).userId = user._id;
-    return res.status(200).json({ data: user, token: token });
+    return res.status(200).json({ data: user });
   } catch (error) {
     return res.status(404).json({ error: error });
   }
@@ -84,8 +81,6 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "incorrect password" });
     }
 
-    const token = generateToken(user._id.toString());
-
     (req.session as any).userId = user._id;
 
     req.session.save((err) => {
@@ -95,11 +90,11 @@ export const loginUser = async (req: Request, res: Response) => {
 
       return res.status(200).json({
         message: "Login successful",
-        token: token,
         data: {
           _id: user._id,
           name: user.name,
           email: user.email,
+          gender: user.gender,
           university: user.university,
         },
       });
@@ -114,23 +109,32 @@ export const loginUser = async (req: Request, res: Response) => {
 
 // get profile
 export const getProfile = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).userId;
+  // try {
+  //   const userId = (req as any).userId;
 
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No user id found" });
-    }
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "no user found" });
-    }
-    return res.status(200).json({ user });
+  //   if (!userId) {
+  //     return res
+  //       .status(401)
+  //       .json({ message: "Unauthorized: No user id found" });
+  //   }
+  //   const user = await User.findById(userId).select("-password");
+  //   if (!user) {
+  //     return res.status(404).json({ message: "no user found" });
+  //   }
+  //   return res.status(200).json({ user });
+  // } catch (error) {
+  //   return res
+  //     .status(500)
+  //     .json({ error: error, message: "internal server error" });
+  // }
+
+  try {
+    const user = await User.findById((req as any).userId).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.status(200).json({ message: "Profile accessed", user });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: error, message: "internal server error" });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
