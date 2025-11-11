@@ -88,10 +88,21 @@ export const loginUser = async (req: Request, res: Response) => {
 
     (req.session as any).userId = user._id;
 
-    return res.status(200).json({
-      message: "Login successful",
-      token: token,
-      data: user,
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ message: "session save failed" });
+      }
+
+      return res.status(200).json({
+        message: "Login successful",
+        token: token,
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          university: user.university,
+        },
+      });
     });
   } catch (error) {
     return res.status(500).json({
