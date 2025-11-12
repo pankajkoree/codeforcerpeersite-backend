@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRouter";
 
 dotenv.config();
@@ -9,8 +10,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DB_URI;
-
-app.use(express.json());
 
 // cors on top
 app.use(
@@ -21,9 +20,12 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
+app.use(express.json());
+app.use(cookieParser());
 app.use(userRouter);
 
 if (!DBURI) {

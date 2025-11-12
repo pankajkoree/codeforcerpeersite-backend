@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { generateToken } from "../utils/generateToken";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -53,13 +53,8 @@ export const registerUser = async (req: Request, res: Response) => {
 
     await newUser.save();
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
-
     return res.status(201).json({
       message: "registration successful",
-      token,
       user: {
         _id: newUser._id,
         name: newUser.name,
@@ -91,8 +86,12 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "incorrect password" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
+    const token = generateToken(user._id.toString());
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -133,8 +132,10 @@ export const getProfile = async (req: Request, res: Response) => {
 };
 
 export const logoutUser = async (req: Request, res: Response) => {
-  req.session.destroy(() => {
-    res.clearCookie("connect.sid");
-    return res.status(200).json({ message: "Logged out successfully" });
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
+  return res.status(200).json({ message: "Logged out successfully" });
 };
