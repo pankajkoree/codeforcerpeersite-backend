@@ -7,7 +7,7 @@ import {
   logoutUser,
   getProfile,
 } from "../controllers/userController";
-import { verifySession } from "../middleware/verifySession";
+import { verifyJWT } from "../middleware/verifyJWT";
 
 const userRouter = express.Router();
 
@@ -15,8 +15,6 @@ userRouter.get("/user", getAllUser);
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/logout", logoutUser);
-
-// profile with token
-userRouter.get("/profile", verifySession, getProfile);
+userRouter.get("/profile", verifyJWT, getProfile);
 
 export default userRouter;

@@ -2,16 +2,19 @@ import { Request, Response } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
-    const response = await User.find();
-    if (!response) {
+    const users = await User.find().select("-password");
+    if (!users) {
       return res.status(404).json({ error: "User not found" });
     }
-    return res.json(response);
+    return res.json(users);
   } catch (error) {
-    return res.status(404).json({ error: error });
+    return res
+      .status(500)
+      .json({ message: "failed to fetch users", error: error });
   }
 };
 
@@ -40,7 +43,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcryptjs.hash(password, 10);
 
-    const user = new User({
+    const newUser = new User({
       name,
       email,
       password: hashedPassword,
@@ -48,18 +51,25 @@ export const registerUser = async (req: Request, res: Response) => {
       university,
     });
 
-    try {
-      await user.save();
-    } catch (err) {
-      return res
-        .status(500)
-        .json({ message: "Failed to save user", error: err });
-    }
+    await newUser.save();
 
-    (req.session as any).userId = user._id;
-    return res.status(200).json({ data: user });
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
+
+    return res.status(201).json({
+      message: "registration successful",
+      token,
+      user: {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        gender: newUser.gender,
+        university: newUser.university,
+      },
+    });
   } catch (error) {
-    return res.status(404).json({ error: error });
+    return res.status(500).json({ message: "server error", error: error });
   }
 };
 
@@ -81,23 +91,20 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "incorrect password" });
     }
 
-    (req.session as any).userId = user._id;
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
 
-    req.session.save((err) => {
-      if (err) {
-        return res.status(500).json({ message: "session save failed" });
-      }
-
-      return res.status(200).json({
-        message: "Login successful",
-        data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          gender: user.gender,
-          university: user.university,
-        },
-      });
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        gender: user.gender,
+        university: user.university,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -109,32 +116,19 @@ export const loginUser = async (req: Request, res: Response) => {
 
 // get profile
 export const getProfile = async (req: Request, res: Response) => {
-  // try {
-  //   const userId = (req as any).userId;
-
-  //   if (!userId) {
-  //     return res
-  //       .status(401)
-  //       .json({ message: "Unauthorized: No user id found" });
-  //   }
-  //   const user = await User.findById(userId).select("-password");
-  //   if (!user) {
-  //     return res.status(404).json({ message: "no user found" });
-  //   }
-  //   return res.status(200).json({ user });
-  // } catch (error) {
-  //   return res
-  //     .status(500)
-  //     .json({ error: error, message: "internal server error" });
-  // }
-
   try {
-    const user = await User.findById((req as any).userId).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const userId = (req as any).userId;
+    const user = await User.findOne({ userId }).select("-password");
 
-    res.status(200).json({ message: "Profile accessed", user });
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    return res.status(200).json({ user });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    return res.status(500).json({
+      message: "Server error",
+      error: error,
+    });
   }
 };
 

@@ -3,15 +3,14 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import userRouter from "./routes/userRouter";
-import session from "express-session";
-import MongoStore from "connect-mongo";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DB_URI;
-const secretKey = process.env.SESSION_SECRET!;
+
+app.use(express.json());
 
 // cors on top
 app.use(
@@ -22,28 +21,6 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-
-app.use(express.json());
-
-app.use(
-  session({
-    secret: secretKey,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: DBURI,
-      collectionName: "sessions",
-      ttl: 15 * 24 * 60 * 60,
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24,
-    },
   })
 );
 
