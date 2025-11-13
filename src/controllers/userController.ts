@@ -96,11 +96,12 @@ export const loginUser = async (req: Request, res: Response) => {
     await Token.create({ userId: user._id, token });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: false,
+      sameSite:"lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log(token)
     return res.status(200).json({
       message: "Login successful",
       token,
