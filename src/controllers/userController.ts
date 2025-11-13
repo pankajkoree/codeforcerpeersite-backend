@@ -1,9 +1,15 @@
-import { Request, Response } from "express";
+import { Request, Response,NextFunction } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
 import { generateToken } from "../utils/generateToken";
 import Token from "../model/Token";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+
+dotenv.config();
+
+const isProduction = process.env.NODE_ENV === "production";
 
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -93,7 +99,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -138,7 +144,38 @@ export const logoutUser = async (req: Request, res: Response) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    sameSite: isProduction ? "none" : "lax",
   });
   return res.status(200).json({ message: "Logged out successfully" });
+};
+
+export const getCurrentUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) {
+      return res.status(401).json({
+        message: "Unauthorized - missing token",
+      });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+    };
+
+    const user = await User.findById(decoded.id).select("-password");
+
+    const validToken = await Token.findOne({ token });
+    if (!validToken) {
+      return res.status(401).json({
+        message: "invalid or expred token while validating the token",
+      });
+    }
+    (req as any).userId = decoded.id;
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
