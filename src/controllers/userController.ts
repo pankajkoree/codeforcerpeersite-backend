@@ -72,9 +72,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    console.log(`Email: ${email} Password: ${password}`)
     const user = await User.findOne({ email });
-    console.log("User : ",user)
 
     if (!user) {
       return res.status(400).json({ message: "user not found" });
@@ -85,8 +83,6 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const isPasswordMatched = await bcryptjs.compare(password, user.password);
 
-    console.log("Matched : ",isPasswordMatched)
-
     if (!isPasswordMatched) {
       return res.status(400).json({ message: "incorrect password" });
     }
@@ -96,12 +92,11 @@ export const loginUser = async (req: Request, res: Response) => {
     await Token.create({ userId: user._id, token });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite:"lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    console.log(token)
     return res.status(200).json({
       message: "Login successful",
       token,
@@ -114,7 +109,6 @@ export const loginUser = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.log("Error : ",error)
     return res.status(500).json({
       message: "Server error",
       error: error,

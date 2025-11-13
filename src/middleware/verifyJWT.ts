@@ -7,7 +7,6 @@ export const verifyJWT = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("Cookeies : ",req.cookies.token)
   const token = req.cookies?.token;
   if (!token) {
     return res.status(401).json({
