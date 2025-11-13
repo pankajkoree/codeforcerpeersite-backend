@@ -7,7 +7,7 @@ export const verifyJWT = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies?.token;
+  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({
       message: "Unauthorized - missing token",
@@ -21,11 +21,9 @@ export const verifyJWT = async (
 
     const validToken = await Token.findOne({ token });
     if (!validToken) {
-      return res
-        .status(401)
-        .json({
-          message: "invalid or expred token while validating the token",
-        });
+      return res.status(401).json({
+        message: "invalid or expred token while validating the token",
+      });
     }
     (req as any).userId = decoded.id;
     next();
