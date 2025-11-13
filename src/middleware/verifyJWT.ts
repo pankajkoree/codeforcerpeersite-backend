@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import Token from "../model/Token";
 
-export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
+export const verifyJWT = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.cookies?.token;
   if (!token) {
     return res.status(401).json({
@@ -13,6 +18,15 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: string;
     };
+
+    const validToken = await Token.findOne({ token });
+    if (!validToken) {
+      return res
+        .status(401)
+        .json({
+          message: "invalid or expred token while validating the token",
+        });
+    }
     (req as any).userId = decoded.id;
     next();
   } catch (error) {
