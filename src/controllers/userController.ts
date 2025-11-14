@@ -1,4 +1,4 @@
-import { Request, Response,NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import User from "../model/User";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
@@ -27,10 +27,27 @@ export const getAllUser = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, gender, university } = req.body;
+    const {
+      name,
+      cfusername,
+      email,
+      password,
+      gender,
+      university,
+      country,
+      registeredOn,
+    } = req.body;
 
     // validation
-    if (!name || !email || !password || !gender || !university) {
+    if (
+      !name ||
+      !cfusername ||
+      !email ||
+      !password ||
+      !gender ||
+      !university ||
+      !country
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -52,10 +69,13 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const newUser = new User({
       name,
+      cfusername,
       email,
       password: hashedPassword,
       gender,
       university,
+      country,
+      registeredOn,
     });
 
     await newUser.save();
@@ -65,9 +85,12 @@ export const registerUser = async (req: Request, res: Response) => {
       user: {
         _id: newUser._id,
         name: newUser.name,
+        cfusername: newUser.cfusername,
         email: newUser.email,
         gender: newUser.gender,
         university: newUser.university,
+        country: newUser.country,
+        registeredOn: newUser.registeredOn,
       },
     });
   } catch (error) {
@@ -109,9 +132,12 @@ export const loginUser = async (req: Request, res: Response) => {
       data: {
         _id: user._id,
         name: user.name,
+        cfusername: user.cfusername,
         email: user.email,
         gender: user.gender,
         university: user.university,
+        country: user.country,
+        registeredOn: user.registeredOn,
       },
     });
   } catch (error) {
