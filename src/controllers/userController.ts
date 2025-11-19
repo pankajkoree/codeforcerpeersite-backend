@@ -205,3 +205,75 @@ export const getCurrentUser = async (
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+
+export const verifyUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { identifier } = req.body;
+    if (!identifier) {
+      return res
+        .status(400)
+        .json({ message: "Email or codeforce username is required" });
+    }
+    let user;
+    if (identifier.includes("@")) {
+      user = await User.findOne({ email: identifier.toLowercase() });
+    } else {
+      try {
+        user = await User.findOne({ cfusername: identifier });
+      } catch (error) {
+        return res
+          .status(404)
+          .json({ message: "User not found", error: error });
+      }
+    }
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    return res.status(200).json({ exists: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { identifier, newPassword } = req.body;
+
+    // Validate input
+    if (!identifier || !newPassword) {
+      return res.status(400).json({ message: "both fields are required" });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "password must be 8 characters" });
+    }
+
+    // Find user
+    let user;
+    if (identifier.includes("@")) {
+      user = await User.findOne({ email: identifier.toLowerCase() });
+    } else {
+      user = await User.findOne({ cfusername: identifier });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash & update password
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reset successful. You can now login with your new password.",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error resetting password" });
+  }
+};

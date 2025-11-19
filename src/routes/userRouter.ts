@@ -6,6 +6,7 @@ import {
   loginUser,
   logoutUser,
   getProfile,
+  resetPassword,
 } from "../controllers/userController";
 import { verifyJWT } from "../middleware/verifyJWT";
 
@@ -16,5 +17,6 @@ userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/logout", logoutUser);
 userRouter.get("/profile", verifyJWT, getProfile);
+userRouter.post("/forgotPassword", resetPassword);
 
 export default userRouter;
